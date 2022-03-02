@@ -1,6 +1,7 @@
 ﻿using System;
 using Mod4.Services;
 using Microsoft.Extensions.DependencyInjection;
+using ApplicationTemplate.Services;
 
 namespace Mod4;
 
@@ -24,5 +25,7 @@ public class Program
         {
             Console.Error.WriteLine(e);
         }
+
+        
     }
 }

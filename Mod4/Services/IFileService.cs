@@ -1,4 +1,6 @@
-﻿namespace Mod4.Services;
+﻿using System.Collections.Generic;
+
+namespace Mod4.Services;
 
 /// <summary>
 ///     This service interface only exists an example.
@@ -6,6 +8,6 @@
 /// </summary>
 public interface IFileService
 {
-    void Read();
-    void Write();
+    void Read(string file, List<int> movieIds, List<string> titles, List<string> genres);
+    void Write(List<string> titleList, List<int> movieIdsList, List<string> genresList, string file);
 }

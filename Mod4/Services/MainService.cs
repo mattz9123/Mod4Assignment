@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ApplicationTemplate.Services;
 
 namespace Mod4.Services;
 
@@ -24,10 +25,14 @@ public class MainService : IMainService
         IServiceCollection serviceCollection = new ServiceCollection();
         var serviceProvider = serviceCollection
             .AddLogging(x => x.AddConsole())
+            .AddTransient<IFileService, FileService>()
             .BuildServiceProvider();
         var logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<Program>();
 
-        string file = "C:/Users/mattz/source/repos/AssignmentModule4/Mod4/ml-latest-small/movies.csv";
+
+        //logger.Log(LogLevel.Information, "Here is an informational message");
+        string file = "movies.csv";
+        string secondFile = null;
         bool continueProgram = true;
 
         while (continueProgram)
@@ -38,8 +43,16 @@ public class MainService : IMainService
                 // Ask user if they would like to list or add movies
                 Console.WriteLine("1. List movies");
                 Console.WriteLine("2. Add movie");
-                Console.WriteLine("3. Exit");
+                Console.WriteLine("3. List 10 movies");
+                Console.WriteLine("4. List shows");
+                Console.WriteLine("5. List videos");
+                Console.WriteLine("6. Exit");
                 string choice = Console.ReadLine();
+
+                
+                
+                var fileService = serviceProvider.GetService<IFileService>();
+                
 
                 // add movie IDs to a list
                 List<int> movieIds = new List<int>();
@@ -50,95 +63,75 @@ public class MainService : IMainService
                 // add movie genres to a list
                 List<string> genres = new List<string>();
 
+                Media media = null;
+
                 try
                 {
-                    StreamReader sr = new StreamReader(file);
-                    sr.ReadLine();
-                    while (!sr.EndOfStream)
-                    {
-                        string line = sr.ReadLine();
-                        int movieIndex = line.IndexOf('"');
-                        if (movieIndex == -1)
-                        {
-                            string[] movieInfo = line.Split(',');
-
-                            movieIds.Add(int.Parse(movieInfo[0]));
-
-                            titles.Add(movieInfo[1]);
-
-                            genres.Add(movieInfo[2].Replace("|", ", "));
-                        }
-                        else
-                        {
-                            movieIds.Add(int.Parse(line.Substring(0, movieIndex - 1)));
-                            line = line.Substring(movieIndex + 1);
-                            movieIndex = line.IndexOf('"');
-                            titles.Add(line.Substring(0, movieIndex));
-                            line = line.Substring(movieIndex + 2);
-                            genres.Add(line.Replace("|", ", "));
-                        }
-                    }
-                    sr.Close();
+                    fileService.Read(file, movieIds, titles, genres);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex.Message);
                 }
-
-
                 if (choice == "1")
                 {
-                    Console.WriteLine($"Current number of movies: {movieIds.Count}");
-                    Console.WriteLine("Number of movies to list: ");
-                    int numOfMovies = Convert.ToInt32(Console.ReadLine());
-
-                    for (int i = 0; i < numOfMovies; i++)
-                    {
-                        Console.WriteLine($"Movie ID: {movieIds[i]}, Movie Title: {titles[i]}, Movie Genre: {genres[i]}");
-                    }
+                    // Run this function to display the movies, function found at bottom of this page
+                    DisplayMovies(titles, movieIds, genres);
                 }
                 else if (choice == "2")
                 {
-
-                    Console.WriteLine("Title: ");
-                    string addTitle = Console.ReadLine();
-                    int newMovieID = movieIds[movieIds.Count - 1] + 1;
                     try
                     {
-                        if (titles.Contains(addTitle))
-                        {
-                            Console.WriteLine("Movie already exists");
-                        }
-                        else
-                        {
-                            titles.Add(addTitle);
-                            movieIds.Add(newMovieID);
-
-                            Console.WriteLine("Genre (if entering multiple, separate with space): ");
-                            string addGenre = Console.ReadLine();
-                            string stringGenre = addGenre.Replace(" ", "|");
-
-                            genres.Add(addGenre);
-
-                            StreamWriter sw = new StreamWriter(file, true);
-
-                            sw.WriteLine($"{newMovieID},{addTitle},{stringGenre}");
-                            sw.Close();
-                        }
+                        // Run this function to write to the movies.csv file
+                        fileService.Write(titles, movieIds, genres, file);
                     }
                     catch (Exception ex)
                     {
                         logger.LogError(ex.Message);
                     }
-
                 }
                 else if (choice == "3")
                 {
+                    // Run this to display top 10 movies file, while creating new movie object
+                    secondFile = "top10movies.csv";
+                    media = new Movie();
+                    media.Display(secondFile);
+
+                }
+                else if (choice == "4")
+                {
+                    // Run this to display shows file
+                    secondFile = "shows.csv";
+                    media = new Show();
+                    media.Display(secondFile);
+                }
+                else if (choice == "5")
+                {
+                    // Run this to display video file
+                    secondFile = "videos.csv";
+                    media = new Video();
+                    media.Display(secondFile);
+                }
+                else if (choice == "6")
+                {
+                    // Ends the loop
                     continueProgram = false;
                 }
-
-
+                
             }
         }
     }
+
+    public void DisplayMovies(List<string> titleList, List<int> movieIdsList, List<string> genresList)
+    {
+        // Display movies based on input from user
+        Console.WriteLine($"Current number of movies: {movieIdsList.Count}");
+        Console.WriteLine("Number of movies to list: ");
+        int numOfMovies = Convert.ToInt32(Console.ReadLine());
+        for (int i = 0; i < numOfMovies; i++)
+        {
+            Console.WriteLine($"Movie ID: {movieIdsList[i]}, Movie Title: {titleList[i]}, Movie Genre: {genresList[i]}");
+        }
+    }
+
 }

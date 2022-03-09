@@ -2,6 +2,7 @@
 using Mod4.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ApplicationTemplate.Services;
 
 namespace Mod4;
 
@@ -23,6 +24,7 @@ internal class Startup
         // Add new lines of code here to register any interfaces and concrete services you create
         services.AddTransient<IMainService, MainService>();
         services.AddTransient<IFileService, FileService>();
+        services.AddTransient<IRepository, JSONRepository>();
 
         return services.BuildServiceProvider();
     }

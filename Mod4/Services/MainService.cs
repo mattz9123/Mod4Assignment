@@ -35,6 +35,9 @@ public class MainService : IMainService
         string secondFile = null;
         bool continueProgram = true;
 
+        JSONRepository jsonRepository = new JSONRepository();
+        jsonRepository.Read(jsonRepository.Write());
+
         while (continueProgram)
         {
             // read file
